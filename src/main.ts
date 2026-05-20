@@ -4,6 +4,7 @@ import { provider } from "./blockchain/provider";
 import { request } from "node:http";
 import { timeStamp } from "node:console";   
 import { listenNewBlocks } from "./blockchain/block-listener.js";
+import { getTransactionInfo } from "./blockchain/transaction-service.js"
 
 //listenNewBlocks();
 
@@ -54,6 +55,20 @@ app.get("/block/:number", async (request) => {
     };
 });
 
+app.get("/transaction/:hash", async (request, reply) => {
+  const { hash } = request.params as { hash: string };
+
+  const transaction = await getTransactionInfo(hash);
+
+  if (!transaction) {
+    return reply.status(404).send({
+      error: "Transaction not found",
+    });
+  }
+
+  return transaction;
+});
+
 const start = async () => {
   try {
     await app.listen({
@@ -69,19 +84,20 @@ const start = async () => {
 start();
 
 provider.on("block", async (blockNumber) => {
-    const block = await provider.getBlock(blockNumber, true);
+  const block = await provider.getBlock(blockNumber, true);
 
-    const firstTxHash = block?.transactions[0];
+  const firstTxHash = block?.transactions[0];
 
-    if(!firstTxHash){
-        return
-    }
+  if (!firstTxHash) {
+    return
+  }
 
-    const transaction = await provider.getTransaction(firstTxHash);
+  const transaction = await provider.getTransaction(firstTxHash);
 
-    console.log({
+  console.log({
+    hash: firstTxHash,
     from: transaction?.from,
     to: transaction?.to,
     value: transaction?.value.toString(),
-});
+  });
 });

@@ -5,6 +5,7 @@ import { request } from "node:http";
 import { timeStamp } from "node:console";   
 import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
+import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
 
 //listenNewBlocks();
 
@@ -67,6 +68,15 @@ app.get("/transaction/:hash", async (request, reply) => {
   }
 
   return transaction;
+});
+
+app.get("/logs/transfers", async () => {
+  const transfers = await getUsdcTransferLogs();
+
+  return {
+    count: transfers.length,
+    transfers,
+  };
 });
 
 const start = async () => {

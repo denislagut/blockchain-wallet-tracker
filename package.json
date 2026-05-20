@@ -1,0 +1,27 @@
+{
+  "name": "blockchain-wallet-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "dev": "tsx watch src/main.ts",
+  "build": "tsc",
+  "start": "node dist/main.js"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
+    "fastify": "^5.8.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "eslint": "^10.4.0",
+    "prettier": "^3.8.3",
+    "tsx": "^4.22.2",
+    "typescript": "^6.0.3"
+  }
+}

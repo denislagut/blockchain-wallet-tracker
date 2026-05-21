@@ -9,13 +9,14 @@ const transferTopic = ethers.id("Transfer(address,address,uint256)");
 
 const USDC_SEPOLIA_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 
-export const getUsdcTransferLogs = async () => {
-  const latestBlock = await provider.getBlockNumber();
-
+export const getUsdcTransferLogs = async (
+  fromBlock: number,
+  toBlock: number,
+) => {
   const logs = await provider.getLogs({
     address: USDC_SEPOLIA_ADDRESS,
-    fromBlock: latestBlock - 5,
-    toBlock: latestBlock,
+    fromBlock,
+    toBlock,
     topics: [transferTopic],
   });
 

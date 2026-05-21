@@ -9,6 +9,7 @@ import { timeStamp } from "node:console";
 import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
+import { indexRecentUsdcTransfers } from "./blockchain/usdc-indexer.js";
 
 //База данных
 import { db } from "./db/client.js";
@@ -93,12 +94,21 @@ app.get("/logs/transfers", async () => {
 
   for (const transfer of transfers) {
     await saveErc20Transfer(transfer);
-  }
+  };
 
   return {
     count: transfers.length,
     saved: transfers.length,
     transfers,
+  };
+});
+
+app.post("/indexer/usdc/recent", async () => {
+  const result = await indexRecentUsdcTransfers();
+
+  return{
+    status: "ok", 
+    ... result,
   };
 });
 

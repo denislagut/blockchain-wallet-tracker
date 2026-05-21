@@ -15,4 +15,12 @@ export const initDb = async () => {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS indexer_state (
+      indexer_name TEXT PRIMARY KEY,
+      last_processed_block INTEGER NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
 };

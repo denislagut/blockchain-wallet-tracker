@@ -9,6 +9,46 @@ import {
 const INDEXER_NAME = "usdc_transfers";
 const BLOCK_RANGE = 5;
 
+export const catchUpUsdcTransfers = async () => {
+  const latestBlock = await provider.getBlockNumber();
+
+  let lastProcessedBlock = await getLastProcessedBlock(INDEXER_NAME);
+
+  let fromBlock =
+    lastProcessedBlock === null
+      ? latestBlock - BLOCK_RANGE
+      : lastProcessedBlock + 1;
+
+  let totalFound = 0;
+  let totalSaved = 0;
+  let batches = 0;
+
+  while (fromBlock <= latestBlock) {
+    const toBlock = Math.min(fromBlock + BLOCK_RANGE - 1, latestBlock);
+
+    const transfers = await getUsdcTransferLogs(fromBlock, toBlock);
+
+    for (const transfer of transfers) {
+      await saveErc20Transfer(transfer);
+    }
+
+    await saveLastProcessedBlock(INDEXER_NAME, toBlock);
+
+    totalFound += transfers.length;
+    totalSaved += transfers.length;
+    batches += 1;
+
+    fromBlock = toBlock + 1;
+  }
+
+  return {
+    latestBlock,
+    totalFound,
+    totalSaved,
+    batches,
+  };
+};
+
 export const indexRecentUsdcTransfers = async () => {
   const latestBlock = await provider.getBlockNumber();
 

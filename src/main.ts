@@ -9,7 +9,10 @@ import { timeStamp } from "node:console";
 import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
-import { indexRecentUsdcTransfers } from "./blockchain/usdc-indexer.js";
+import {
+  indexRecentUsdcTransfers,
+  catchUpUsdcTransfers,
+} from "./blockchain/usdc-indexer.js";
 import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js";
 
 //База данных
@@ -110,6 +113,15 @@ app.post("/indexer/usdc/recent", async () => {
   return{
     status: "ok", 
     ... result,
+  };
+});
+
+app.post("/indexer/usdc/catch-up", async () => {
+  const result = await catchUpUsdcTransfers();
+
+  return {
+    status: "ok",
+    ...result,
   };
 });
 

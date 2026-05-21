@@ -10,6 +10,7 @@ import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
 import { indexRecentUsdcTransfers } from "./blockchain/usdc-indexer.js";
+import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js";
 
 //База данных
 import { db } from "./db/client.js";
@@ -89,19 +90,19 @@ app.get("/transaction/:hash", async (request, reply) => {
   return transaction;
 });
 
-app.get("/logs/transfers", async () => {
-  const transfers = await getUsdcTransferLogs();
+// app.get("/logs/transfers", async () => {
+//   const transfers = await getUsdcTransferLogs();
 
-  for (const transfer of transfers) {
-    await saveErc20Transfer(transfer);
-  };
+//   for (const transfer of transfers) {
+//     await saveErc20Transfer(transfer);
+//   };
 
-  return {
-    count: transfers.length,
-    saved: transfers.length,
-    transfers,
-  };
-});
+//   return {
+//     count: transfers.length,
+//     saved: transfers.length,
+//     transfers,
+//   };
+// });
 
 app.post("/indexer/usdc/recent", async () => {
   const result = await indexRecentUsdcTransfers();
@@ -115,6 +116,8 @@ app.post("/indexer/usdc/recent", async () => {
 const start = async () => {
   try {
     await initDb();
+
+    startUsdcIndexerListener();
 
     await app.listen({
       port: env.port,

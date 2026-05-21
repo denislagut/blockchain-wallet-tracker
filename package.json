@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "tsx watch src/main.ts",
-  "build": "tsc",
-  "start": "node dist/main.js"
-},
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,10 +15,12 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "ethers": "^6.16.0",
-    "fastify": "^5.8.5"
+    "fastify": "^5.8.5",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
+    "@types/pg": "^8.20.0",
     "eslint": "^10.4.0",
     "prettier": "^3.8.3",
     "tsx": "^4.22.2",

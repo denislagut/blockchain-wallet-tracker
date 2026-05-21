@@ -1,11 +1,20 @@
 import { ethers } from "ethers";
 import Fastify from "fastify";
 import { provider } from "./blockchain/provider";
+import { env } from "./config/env.js"
 import { request } from "node:http";
 import { timeStamp } from "node:console";   
+
+//Блокчейн
 import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
+
+//База данных
+import { db } from "./db/client.js";
+import { initDb } from "./db/init.js";
+
+import { saveErc20Transfer } from "./db/erc20-transfer-repository.js";
 
 //listenNewBlocks();
 
@@ -16,6 +25,15 @@ const app = Fastify({
 app.get("/health", async () => {
   return {
     status: "ok",
+  };
+});
+
+app.get("/db/health", async () => {
+  const result = await db.query("SELECT NOW()");
+
+  return {
+    status: "ok",
+    time: result.rows[0].now,
   };
 });
 
@@ -73,16 +91,23 @@ app.get("/transaction/:hash", async (request, reply) => {
 app.get("/logs/transfers", async () => {
   const transfers = await getUsdcTransferLogs();
 
+  for (const transfer of transfers) {
+    await saveErc20Transfer(transfer);
+  }
+
   return {
     count: transfers.length,
+    saved: transfers.length,
     transfers,
   };
 });
 
 const start = async () => {
   try {
+    await initDb();
+
     await app.listen({
-      port: 3000,
+      port: env.port,
       host: "0.0.0.0",
     });
   } catch (error) {
@@ -93,21 +118,21 @@ const start = async () => {
 
 start();
 
-provider.on("block", async (blockNumber) => {
-  const block = await provider.getBlock(blockNumber, true);
+// provider.on("block", async (blockNumber) => {
+//   const block = await provider.getBlock(blockNumber, true);
 
-  const firstTxHash = block?.transactions[0];
+//   const firstTxHash = block?.transactions[0];
 
-  if (!firstTxHash) {
-    return
-  }
+//   if (!firstTxHash) {
+//     return
+//   }
 
-  const transaction = await provider.getTransaction(firstTxHash);
+//   const transaction = await provider.getTransaction(firstTxHash);
 
-  console.log({
-    hash: firstTxHash,
-    from: transaction?.from,
-    to: transaction?.to,
-    value: transaction?.value.toString(),
-  });
-});
+//   console.log({
+//     hash: firstTxHash,
+//     from: transaction?.from,
+//     to: transaction?.to,
+//     value: transaction?.value.toString(),
+//   });
+// });

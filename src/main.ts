@@ -21,6 +21,11 @@ import {
   getTransfersByWallet,
   getWalletStats,
 } from "./db/erc20-transfer-repository.js";
+import {
+  addTrackedToken,
+  getAllTrackedTokens,
+  setTrackedTokenActive,
+} from "./db/tracked-token-repository.js";
 
 //listenNewBlocks();
 
@@ -157,6 +162,69 @@ app.post("/indexer/erc20/catch-up", async () => {
   return {
     status: "ok",
     ...result,
+  };
+});
+
+
+app.get("/tokens", async () => {
+  const tokens = await getAllTrackedTokens();
+
+  return {
+    count: tokens.length,
+    tokens,
+  };
+});
+
+app.post("/tokens", async (request) => {
+  const body = request.body as {
+    address: string;
+    symbol: string;
+    decimals: number;
+  };
+
+  const token = await addTrackedToken({
+    address: body.address,
+    symbol: body.symbol,
+    decimals: body.decimals,
+  });
+
+  return {
+    status: "ok",
+    token,
+  };
+});
+
+app.patch("/tokens/:address/enable", async (request, reply) => {
+  const { address } = request.params as { address: string };
+
+  const token = await setTrackedTokenActive(address, true);
+
+  if (!token) {
+    return reply.status(404).send({
+      error: "Token not found",
+    });
+  }
+
+  return {
+    status: "ok",
+    token,
+  };
+});
+
+app.patch("/tokens/:address/disable", async (request, reply) => {
+  const { address } = request.params as { address: string };
+
+  const token = await setTrackedTokenActive(address, false);
+
+  if (!token) {
+    return reply.status(404).send({
+      error: "Token not found",
+    });
+  }
+
+  return {
+    status: "ok",
+    token,
   };
 });
 

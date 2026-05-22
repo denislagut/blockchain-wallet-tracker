@@ -25,6 +25,7 @@ export const getUsdcTransferLogs = async (
 
     return {
       transactionHash: log.transactionHash,
+      logIndex: log.index,
       blockNumber: log.blockNumber,
       tokenAddress: log.address,
       from: parsed?.args.from as string,

@@ -2,6 +2,7 @@ import { db } from "./client.js";
 
 type Erc20Transfer = {
   transactionHash: string;
+  logIndex: number;
   blockNumber: number;
   tokenAddress: string;
   from: string;
@@ -18,6 +19,7 @@ export const getRecentErc20Transfers = async (limit = 50) => {
       SELECT
         id,
         transaction_hash,
+        log_index,
         block_number,
         token_address,
         from_address,
@@ -45,6 +47,7 @@ export const getTransfersByWallet = async (walletAddress: string, limit = 50) =>
       SELECT
         id,
         transaction_hash,
+        log_index,
         block_number,
         token_address,
         from_address,
@@ -89,30 +92,32 @@ export const getWalletStats = async (walletAddress: string) => {
 export const saveErc20Transfer = async (transfer: Erc20Transfer) => {
   await db.query(
     `
-    INSERT INTO erc20_transfers (
-    transaction_hash,
-    block_number,
-    token_address,
-    from_address,
-    to_address,
-    amount_raw,
-    amount_formatted,
-    symbol
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      INSERT INTO erc20_transfers (
+        transaction_hash,
+        log_index,
+        block_number,
+        token_address,
+        from_address,
+        to_address,
+        amount_raw,
+        amount_formatted,
+        symbol
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 
-    ON CONFLICT(transaction_hash)
-    DO NOTHING
+      ON CONFLICT(transaction_hash, log_index)
+      DO NOTHING
     `,
     [
-    transfer.transactionHash,
-    transfer.blockNumber,
-    transfer.tokenAddress,
-    transfer.from,
-    transfer.to,
-    transfer.amountRaw,
-    transfer.amountFormatted,
-    transfer.symbol,
-    ]
-    );
+      transfer.transactionHash,
+      transfer.logIndex,
+      transfer.blockNumber,
+      transfer.tokenAddress,
+      transfer.from,
+      transfer.to,
+      transfer.amountRaw,
+      transfer.amountFormatted,
+      transfer.symbol,
+    ],
+  );
 };

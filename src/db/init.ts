@@ -5,6 +5,7 @@ export const initDb = async () => {
     CREATE TABLE IF NOT EXISTS erc20_transfers (
       id SERIAL PRIMARY KEY,
       transaction_hash TEXT NOT NULL,
+      log_index INTEGER NOT NULL DEFAULT 0,
       block_number INTEGER NOT NULL,
       token_address TEXT NOT NULL,
       from_address TEXT NOT NULL,

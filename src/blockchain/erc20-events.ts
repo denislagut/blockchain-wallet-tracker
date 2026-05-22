@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { provider } from "./provider.js";
+import type { TrackedToken } from "../db/tracked-token-repository.js";
 
 const erc20TransferEventInterface = new ethers.Interface([
   "event Transfer(address indexed from, address indexed to, uint256 amount)",
@@ -7,14 +8,13 @@ const erc20TransferEventInterface = new ethers.Interface([
 
 const transferTopic = ethers.id("Transfer(address,address,uint256)");
 
-const USDC_SEPOLIA_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-
-export const getUsdcTransferLogs = async (
+export const getErc20TransferLogs = async (
+  token: TrackedToken,
   fromBlock: number,
   toBlock: number,
 ) => {
   const logs = await provider.getLogs({
-    address: USDC_SEPOLIA_ADDRESS,
+    address: token.address,
     fromBlock,
     toBlock,
     topics: [transferTopic],
@@ -31,8 +31,8 @@ export const getUsdcTransferLogs = async (
       from: parsed?.args.from as string,
       to: parsed?.args.to as string,
       amountRaw: parsed?.args.amount.toString(),
-      amountFormatted: ethers.formatUnits(parsed?.args.amount, 6),
-      symbol: "USDC",
+      amountFormatted: ethers.formatUnits(parsed?.args.amount, token.decimals),
+      symbol: token.symbol,
     };
   });
 };

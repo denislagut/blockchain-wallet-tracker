@@ -1,4 +1,4 @@
-import { indexRecentUsdcTransfers } from "./usdc-indexer.js";
+import { indexRecentErc20Transfers } from "./usdc-indexer.js";
 import { provider } from "./provider.js";
 
 let isIndexing = false;
@@ -15,7 +15,7 @@ export const startUsdcIndexerListener = () => {
     try {
       console.log("New block detected:", blockNumber);
 
-      const result = await indexRecentUsdcTransfers();
+      const result = await indexRecentErc20Transfers();
 
       console.log("USDC indexer result:", result);
     } catch (error) {

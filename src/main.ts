@@ -8,11 +8,8 @@ import { timeStamp } from "node:console";
 //Блокчейн
 import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
-import { getUsdcTransferLogs } from "./blockchain/erc20-events.js";
-import {
-  indexRecentUsdcTransfers,
-  catchUpUsdcTransfers,
-} from "./blockchain/usdc-indexer.js";
+import { getErc20TransferLogs } from "./blockchain/erc20-events.js";
+import { indexRecentErc20Transfers, catchUpErc20Transfers } from "./blockchain/usdc-indexer.js";
 import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js";
 
 //База данных
@@ -145,17 +142,17 @@ app.get("/wallet/:address/stats", async (request) => {
   };
 });
 
-app.post("/indexer/usdc/recent", async () => {
-  const result = await indexRecentUsdcTransfers();
+app.post("/indexer/erc20/recent", async () => {
+  const result = await indexRecentErc20Transfers();
 
-  return{
-    status: "ok", 
-    ... result,
+  return {
+    status: "ok",
+    ...result,
   };
 });
 
-app.post("/indexer/usdc/catch-up", async () => {
-  const result = await catchUpUsdcTransfers();
+app.post("/indexer/erc20/catch-up", async () => {
+  const result = await catchUpErc20Transfers();
 
   return {
     status: "ok",

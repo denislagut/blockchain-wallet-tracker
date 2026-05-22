@@ -24,4 +24,14 @@ export const initDb = async () => {
       updated_at TIMESTAMP DEFAULT NOW()
     );
   `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS tracked_tokens (
+      address TEXT PRIMARY KEY,
+      symbol TEXT NOT NULL,
+      decimals INTEGER NOT NULL,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
 };

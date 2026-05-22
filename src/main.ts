@@ -18,8 +18,12 @@ import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js"
 //База данных
 import { db } from "./db/client.js";
 import { initDb } from "./db/init.js";
-
-import { saveErc20Transfer } from "./db/erc20-transfer-repository.js";
+import {
+  saveErc20Transfer,
+  getRecentErc20Transfers,
+  getTransfersByWallet,
+  getWalletStats,
+} from "./db/erc20-transfer-repository.js";
 
 //listenNewBlocks();
 
@@ -93,6 +97,8 @@ app.get("/transaction/:hash", async (request, reply) => {
   return transaction;
 });
 
+
+
 // app.get("/logs/transfers", async () => {
 //   const transfers = await getUsdcTransferLogs();
 
@@ -106,6 +112,38 @@ app.get("/transaction/:hash", async (request, reply) => {
 //     transfers,
 //   };
 // });
+
+app.get("/transfers", async () => {
+  const transfers = await getRecentErc20Transfers();
+
+  return {
+    count: transfers.length,
+    transfers,
+  };
+});
+
+app.get("/wallet/:address/transfers", async (request) => {
+  const { address } = request.params as { address: string };
+
+  const transfers = await getTransfersByWallet(address);
+
+  return {
+    wallet: address,
+    count: transfers.length,
+    transfers,
+  };
+});
+
+app.get("/wallet/:address/stats", async (request) => {
+  const { address } = request.params as { address: string };
+
+  const stats = await getWalletStats(address);
+
+  return {
+    wallet: address,
+    stats,
+  };
+});
 
 app.post("/indexer/usdc/recent", async () => {
   const result = await indexRecentUsdcTransfers();
@@ -129,7 +167,7 @@ const start = async () => {
   try {
     await initDb();
 
-    startUsdcIndexerListener();
+    //startUsdcIndexerListener();
 
     await app.listen({
       port: env.port,

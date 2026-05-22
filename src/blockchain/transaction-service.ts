@@ -10,11 +10,11 @@ export const getTransactionInfo = async (hash: string) => {
   }
 
   const decodedErc20Transfer = await decodeErc20Transfer(
-  transaction.data,
-  transaction.to,
-);
+    transaction.data,
+    transaction.to,
+  );
 
-const receipt = await provider.getTransactionReceipt(hash);
+  const receipt = await provider.getTransactionReceipt(hash);
 
   return {
     hash: transaction.hash,

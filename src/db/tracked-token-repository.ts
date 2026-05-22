@@ -5,6 +5,7 @@ export type TrackedToken = {
   symbol: string;
   decimals: number;
   is_active?: boolean;
+  created_at?: string;
 };
 
 export const getActiveTrackedTokens = async (): Promise<TrackedToken[]> => {
@@ -22,7 +23,7 @@ export const getActiveTrackedTokens = async (): Promise<TrackedToken[]> => {
   return result.rows;
 };
 
-export const getAllTrackedTokens = async () => {
+export const getAllTrackedTokens = async (): Promise<TrackedToken[]> => {
   const result = await db.query(
     `
       SELECT
@@ -43,7 +44,7 @@ export const addTrackedToken = async (token: {
   address: string;
   symbol: string;
   decimals: number;
-}) => {
+}): Promise<TrackedToken> => {
   const result = await db.query(
     `
       INSERT INTO tracked_tokens (
@@ -79,7 +80,7 @@ export const addTrackedToken = async (token: {
 export const setTrackedTokenActive = async (
   address: string,
   isActive: boolean,
-) => {
+): Promise<TrackedToken | null> => {
   const result = await db.query(
     `
       UPDATE tracked_tokens

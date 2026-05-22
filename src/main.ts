@@ -11,6 +11,7 @@ import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getErc20TransferLogs } from "./blockchain/erc20-events.js";
 import { indexRecentErc20Transfers, catchUpErc20Transfers } from "./blockchain/usdc-indexer.js";
 import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js";
+import { getTokenMetadata } from "./blockchain/token-metadata.js";
 
 //База данных
 import { db } from "./db/client.js";
@@ -99,22 +100,6 @@ app.get("/transaction/:hash", async (request, reply) => {
   return transaction;
 });
 
-
-
-// app.get("/logs/transfers", async () => {
-//   const transfers = await getUsdcTransferLogs();
-
-//   for (const transfer of transfers) {
-//     await saveErc20Transfer(transfer);
-//   };
-
-//   return {
-//     count: transfers.length,
-//     saved: transfers.length,
-//     transfers,
-//   };
-// });
-
 app.get("/transfers", async () => {
   const transfers = await getRecentErc20Transfers();
 
@@ -175,23 +160,27 @@ app.get("/tokens", async () => {
   };
 });
 
-app.post("/tokens", async (request) => {
+app.post("/tokens", async (request, reply) => {
   const body = request.body as {
     address: string;
-    symbol: string;
-    decimals: number;
   };
 
-  const token = await addTrackedToken({
-    address: body.address,
-    symbol: body.symbol,
-    decimals: body.decimals,
-  });
+  try {
+    const metadata = await getTokenMetadata(body.address);
 
-  return {
-    status: "ok",
-    token,
-  };
+    const token = await addTrackedToken(metadata);
+
+    return {
+      status: "ok",
+      token,
+    };
+  } catch (error) {
+    request.log.error(error);
+
+    return reply.status(400).send({
+      error: "Could not read ERC20 token metadata",
+    });
+  }
 });
 
 app.patch("/tokens/:address/enable", async (request, reply) => {

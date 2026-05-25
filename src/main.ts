@@ -4,6 +4,7 @@ import { provider } from "./blockchain/provider";
 import { env } from "./config/env.js"
 import { request } from "node:http";
 import { timeStamp } from "node:console";   
+import cors from "@fastify/cors";
 
 //Блокчейн
 import { listenNewBlocks } from "./blockchain/block-listener.js";
@@ -33,6 +34,7 @@ import {
 const app = Fastify({
   logger: true,
 });
+
 
 app.get("/health", async () => {
   return {
@@ -175,12 +177,13 @@ app.post("/tokens", async (request, reply) => {
       token,
     };
   } catch (error) {
-    request.log.error(error);
+  request.log.error(error);
 
-    return reply.status(400).send({
-      error: "Could not read ERC20 token metadata",
-    });
-  }
+  return reply.status(400).send({
+    error: "Could not read ERC20 token metadata",
+    details: error instanceof Error ? error.message : String(error),
+  });
+}
 });
 
 app.patch("/tokens/:address/enable", async (request, reply) => {
@@ -219,6 +222,12 @@ app.patch("/tokens/:address/disable", async (request, reply) => {
 
 const start = async () => {
   try {
+    await app.register(cors, {
+      origin: "http://localhost:3001",
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type"],
+    });
+
     await initDb();
 
     //startUsdcIndexerListener();

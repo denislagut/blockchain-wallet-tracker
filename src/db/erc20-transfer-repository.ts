@@ -14,7 +14,11 @@ type Erc20Transfer = {
 };
 
 //______________________________________________GET
-export const getRecentErc20Transfers = async (tokenAddress?: string, limit = 50) => {
+export const getRecentErc20Transfers = async (
+  tokenAddress?: string,
+  limit = 50,
+  offset = 0,
+) => {
   const normalizedAddress = tokenAddress ? tokenAddress.toLowerCase() : null;
 
   const result = await db.query(
@@ -35,8 +39,9 @@ export const getRecentErc20Transfers = async (tokenAddress?: string, limit = 50)
       WHERE ($1::TEXT IS NULL OR LOWER(token_address) = $1)
       ORDER BY block_number DESC, id DESC
       LIMIT $2
+      OFFSET $3
     `,
-    [normalizedAddress, limit],
+    [normalizedAddress, limit, offset],
   );
 
   return result.rows;

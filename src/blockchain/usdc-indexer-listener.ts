@@ -17,9 +17,9 @@ export const startUsdcIndexerListener = () => {
 
       const result = await indexRecentErc20Transfers();
 
-      console.log("USDC indexer result:", result);
+      console.log("ERC20 indexer result:", result);
     } catch (error) {
-      console.error("USDC indexer failed:", error);
+      console.error("ERC20 indexer failed:", error);
     } finally {
       isIndexing = false;
     }

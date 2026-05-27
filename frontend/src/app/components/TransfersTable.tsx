@@ -22,6 +22,8 @@ export const TransfersTable = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [selectedToken, setSelectedToken] = useState("");
+  const [offset, setOffset] = useState(0);
+  const limit = 50;
 
   useEffect(() => {
     const loadTokens = async () => {
@@ -35,15 +37,20 @@ export const TransfersTable = () => {
 
   useEffect(() => {
     const loadTransfers = async () => {
-      const data = await getTransfers(selectedToken || undefined);
+      const data = await getTransfers(
+        selectedToken || undefined,
+        limit,
+        offset,
+      );
 
       setTransfers(data.transfers);
     };
 
     loadTransfers();
-  }, [selectedToken]);
+  }, [selectedToken, offset]);
 
   return (
+    
     <section>
       <h2 className="text-xl font-semibold mb-4">
         Recent Transfers
@@ -52,7 +59,10 @@ export const TransfersTable = () => {
       <div className="mb-4">
         <select
           value={selectedToken}
-          onChange={(event) => setSelectedToken(event.target.value)}
+          onChange={(event) => {
+            setSelectedToken(event.target.value);
+            setOffset(0);
+          }}
           className="border p-2 rounded"
         >
           <option value="">ALL</option>
@@ -93,6 +103,30 @@ export const TransfersTable = () => {
             ))}
           </tbody>
         </table>
+        <div
+          className="mt-6 flex items-center"
+          style={{ gap: "16px" }}
+        >
+          <button
+            onClick={() => setOffset(Math.max(0, offset - limit))}
+            disabled={offset === 0}
+            className="rounded border px-2 py-2 disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="text-sm">
+            Page {Math.floor(offset / limit) + 1}
+          </span>
+
+          <button
+            onClick={() => setOffset(offset + limit)}
+            disabled={transfers.length < limit}
+            className="rounded border px-4 py-2 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </section>
   );

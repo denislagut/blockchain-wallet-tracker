@@ -1,9 +1,20 @@
 const API_URL = "http://localhost:3000";
 
-export const getTransfers = async (tokenAddress?: string) => {
-  const query = tokenAddress ? `?token=${tokenAddress}` : "";
+export const getTransfers = async (
+  tokenAddress?: string,
+  limit = 50,
+  offset = 0,
+) => {
+  const searchParams = new URLSearchParams();
 
-  const response = await fetch(`${API_URL}/transfers${query}`);
+  if (tokenAddress) {
+    searchParams.set("token", tokenAddress);
+  }
+
+  searchParams.set("limit", String(limit));
+  searchParams.set("offset", String(offset));
+
+  const response = await fetch(`${API_URL}/transfers?${searchParams}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch transfers");

@@ -103,13 +103,25 @@ app.get("/transaction/:hash", async (request, reply) => {
 });
 
 app.get("/transfers", async (request) => {
-  const { token } = request.query as { token?: string };
+  const { token, limit, offset } = request.query as {
+    token?: string;
+    limit?: string;
+    offset?: string;
+  };
 
+  const parsedLimit = limit ? Number(limit) : 50;
+  const parsedOffset = offset ? Number(offset) : 0;
 
-  const transfers = await getRecentErc20Transfers(token);
+  const transfers = await getRecentErc20Transfers(
+    token,
+    parsedLimit,
+    parsedOffset,
+  );
 
   return {
     count: transfers.length,
+    limit: parsedLimit,
+    offset: parsedOffset,
     transfers,
   };
 });

@@ -1,7 +1,9 @@
 const API_URL = "http://localhost:3000";
 
-export const getTransfers = async () => {
-  const response = await fetch(`${API_URL}/transfers`);
+export const getTransfers = async (tokenAddress?: string) => {
+  const query = tokenAddress ? `?token=${tokenAddress}` : "";
+
+  const response = await fetch(`${API_URL}/transfers${query}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch transfers");

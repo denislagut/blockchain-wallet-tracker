@@ -102,8 +102,11 @@ app.get("/transaction/:hash", async (request, reply) => {
   return transaction;
 });
 
-app.get("/transfers", async () => {
-  const transfers = await getRecentErc20Transfers();
+app.get("/transfers", async (request) => {
+  const { token } = request.query as { token?: string };
+
+
+  const transfers = await getRecentErc20Transfers(token);
 
   return {
     count: transfers.length,

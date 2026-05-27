@@ -1,3 +1,4 @@
+import { normalize } from "node:path";
 import { db } from "./client.js";
 
 type Erc20Transfer = {
@@ -13,7 +14,9 @@ type Erc20Transfer = {
 };
 
 //______________________________________________GET
-export const getRecentErc20Transfers = async (limit = 50) => {
+export const getRecentErc20Transfers = async (tokenAddress?: string, limit = 50) => {
+  const normalizedAddress = tokenAddress ? tokenAddress.toLowerCase() : null;
+
   const result = await db.query(
     `
       SELECT
@@ -29,10 +32,11 @@ export const getRecentErc20Transfers = async (limit = 50) => {
         symbol,
         created_at
       FROM erc20_transfers
+      WHERE ($1::TEXT IS NULL OR LOWER(token_address) = $1)
       ORDER BY block_number DESC, id DESC
-      LIMIT $1
+      LIMIT $2
     `,
-    [limit],
+    [normalizedAddress, limit],
   );
 
   return result.rows;

@@ -73,8 +73,10 @@ export const setTokenActive = async (
 export const getWalletTransfers = async (
   address: string,
 ) => {
+  const encodedAddress = encodeURIComponent(address.trim());
+
   const response = await fetch(
-    `${API_URL}/wallet/${address}/transfers`,
+    `${API_URL}/wallet/${encodedAddress}/transfers`,
   );
 
   if (!response.ok) {
@@ -89,14 +91,43 @@ export const getWalletTransfers = async (
 export const getWalletStats = async (
   address: string,
 ) => {
+  const encodedAddress = encodeURIComponent(address.trim());
+
   const response = await fetch(
-    `${API_URL}/wallet/${address}/stats`,
+    `${API_URL}/wallet/${encodedAddress}/stats`,
   );
 
   if (!response.ok) {
     throw new Error(
       "Failed to fetch wallet stats",
     );
+  }
+
+  return response.json();
+};
+
+export const getIndexerListenerStatus = async () => {
+  const response = await fetch(`${API_URL}/indexer/erc20/listener`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch indexer listener status");
+  }
+
+  return response.json();
+};
+
+export const setIndexerListenerEnabled = async (enabled: boolean) => {
+  const action = enabled ? "start" : "stop";
+
+  const response = await fetch(
+    `${API_URL}/indexer/erc20/listener/${action}`,
+    {
+      method: "POST",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update indexer listener");
   }
 
   return response.json();

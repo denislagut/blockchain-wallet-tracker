@@ -11,7 +11,11 @@ import { listenNewBlocks } from "./blockchain/block-listener.js";
 import { getTransactionInfo } from "./blockchain/transaction-service.js"
 import { getErc20TransferLogs } from "./blockchain/erc20-events.js";
 import { indexRecentErc20Transfers, catchUpErc20Transfers } from "./blockchain/usdc-indexer.js";
-import { startUsdcIndexerListener } from "./blockchain/usdc-indexer-listener.js";
+import {
+  getUsdcIndexerListenerStatus,
+  startUsdcIndexerListener,
+  stopUsdcIndexerListener,
+} from "./blockchain/usdc-indexer-listener.js";
 import { getTokenMetadata } from "./blockchain/token-metadata.js";
 
 //База данных
@@ -168,6 +172,27 @@ app.post("/indexer/erc20/catch-up", async () => {
   return {
     status: "ok",
     ...result,
+  };
+});
+
+app.get("/indexer/erc20/listener", async () => {
+  return {
+    status: "ok",
+    listener: getUsdcIndexerListenerStatus(),
+  };
+});
+
+app.post("/indexer/erc20/listener/start", async () => {
+  return {
+    status: "ok",
+    listener: startUsdcIndexerListener(),
+  };
+});
+
+app.post("/indexer/erc20/listener/stop", async () => {
+  return {
+    status: "ok",
+    listener: stopUsdcIndexerListener(),
   };
 });
 

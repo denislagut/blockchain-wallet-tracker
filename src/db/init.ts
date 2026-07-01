@@ -34,4 +34,29 @@ export const initDb = async () => {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+
+  await db.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS erc20_transfers_tx_log_unique_idx
+    ON erc20_transfers (transaction_hash, log_index);
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS erc20_transfers_token_block_idx
+    ON erc20_transfers (token_address, block_number DESC);
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS erc20_transfers_block_idx
+    ON erc20_transfers (block_number DESC);
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS erc20_transfers_from_idx
+    ON erc20_transfers (LOWER(from_address));
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS erc20_transfers_to_idx
+    ON erc20_transfers (LOWER(to_address));
+  `);
 };

@@ -1,5 +1,24 @@
 import { getWalletStats, getWalletTransfers } from "../../../lib/api";
 
+type WalletStat = {
+  token_address: string;
+  symbol: string;
+  sent_count: string;
+  received_count: string;
+  sent_amount: string;
+  received_amount: string;
+};
+
+type Transfer = {
+  transaction_hash: string;
+  log_index: number;
+  symbol: string;
+  from_address: string;
+  to_address: string;
+  amount_formatted: string;
+  block_number: number;
+};
+
 type Props = {
   params: Promise<{
     address: string;
@@ -14,8 +33,16 @@ export default async function WalletPage({ params }: Props) {
     getWalletTransfers(address),
   ]);
 
-  const stats = statsData.stats;
-  const transfers = transfersData.transfers;
+  const stats = statsData.stats as WalletStat[];
+  const transfers = transfersData.transfers as Transfer[];
+  const totalSentTransfers = stats.reduce(
+    (sum, stat) => sum + Number(stat.sent_count),
+    0,
+  );
+  const totalReceivedTransfers = stats.reduce(
+    (sum, stat) => sum + Number(stat.received_count),
+    0,
+  );
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
@@ -45,13 +72,13 @@ export default async function WalletPage({ params }: Props) {
           </p>
         </section>
 
-        <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded border bg-white p-5">
             <p className="mb-2 text-sm text-gray-500">
               Sent transfers
             </p>
             <p className="text-2xl font-bold">
-              {stats.sent_count}
+              {totalSentTransfers}
             </p>
           </div>
 
@@ -60,26 +87,89 @@ export default async function WalletPage({ params }: Props) {
               Received transfers
             </p>
             <p className="text-2xl font-bold">
-              {stats.received_count}
+              {totalReceivedTransfers}
             </p>
           </div>
 
           <div className="rounded border bg-white p-5">
             <p className="mb-2 text-sm text-gray-500">
-              Sent amount
+              Tokens
             </p>
             <p className="text-2xl font-bold">
-              {stats.sent_amount}
+              {stats.length}
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-8 rounded border bg-white p-5">
+          <div className="mb-5">
+            <h2 className="text-xl font-semibold">
+              Token Stats
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Amounts are grouped by token.
             </p>
           </div>
 
-          <div className="rounded border bg-white p-5">
-            <p className="mb-2 text-sm text-gray-500">
-              Received amount
-            </p>
-            <p className="text-2xl font-bold">
-              {stats.received_amount}
-            </p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-3 text-left">
+                    Token
+                  </th>
+                  <th className="border p-3 text-left">
+                    Sent transfers
+                  </th>
+                  <th className="border p-3 text-left">
+                    Received transfers
+                  </th>
+                  <th className="border p-3 text-left">
+                    Sent amount
+                  </th>
+                  <th className="border p-3 text-left">
+                    Received amount
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {stats.map((stat) => (
+                  <tr
+                    key={stat.token_address}
+                    className="hover:bg-gray-50"
+                  >
+                    <td className="border p-3">
+                      <div className="font-medium">
+                        {stat.symbol}
+                      </div>
+                      <div className="break-all text-xs text-gray-500">
+                        {stat.token_address}
+                      </div>
+                    </td>
+                    <td className="border p-3">
+                      {stat.sent_count}
+                    </td>
+                    <td className="border p-3">
+                      {stat.received_count}
+                    </td>
+                    <td className="border p-3">
+                      {stat.sent_amount}
+                    </td>
+                    <td className="border p-3">
+                      {stat.received_amount}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {stats.length === 0 && (
+              <p className="border-x border-b p-3 text-sm text-gray-500">
+                No indexed token activity for this wallet.
+              </p>
+            )}
           </div>
         </section>
 
@@ -117,7 +207,7 @@ export default async function WalletPage({ params }: Props) {
               </thead>
 
               <tbody>
-                {transfers.map((transfer: any) => (
+                {transfers.map((transfer) => (
                   <tr
                     key={`${transfer.transaction_hash}-${transfer.log_index}`}
                     className="hover:bg-gray-50"

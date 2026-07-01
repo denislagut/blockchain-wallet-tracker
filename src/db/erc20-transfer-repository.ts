@@ -1,4 +1,3 @@
-import { normalize } from "node:path";
 import { db } from "./client.js";
 
 type Erc20Transfer = {
@@ -83,6 +82,8 @@ export const getWalletStats = async (walletAddress: string) => {
   const result = await db.query(
     `
       SELECT
+        token_address,
+        symbol,
         COUNT(*) FILTER (WHERE LOWER(from_address) = $1) AS sent_count,
         COUNT(*) FILTER (WHERE LOWER(to_address) = $1) AS received_count,
         COALESCE(SUM(amount_formatted::numeric) FILTER (WHERE LOWER(from_address) = $1), 0) AS sent_amount,
@@ -90,11 +91,13 @@ export const getWalletStats = async (walletAddress: string) => {
       FROM erc20_transfers
       WHERE LOWER(from_address) = $1
          OR LOWER(to_address) = $1
+      GROUP BY token_address, symbol
+      ORDER BY symbol ASC, token_address ASC
     `,
     [normalizedAddress],
   );
 
-  return result.rows[0];
+  return result.rows;
 };
 
 //______________________________________________SAVE

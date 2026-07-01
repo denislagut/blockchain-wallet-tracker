@@ -129,6 +129,8 @@ app.get("/transfers", async (request) => {
 app.get("/wallet/:address/transfers", async (request) => {
   const { address } = request.params as { address: string };
 
+  ethers.isAddress(address) || request.log.error("Invalid address");
+
   const transfers = await getTransfersByWallet(address);
 
   return {
@@ -140,6 +142,8 @@ app.get("/wallet/:address/transfers", async (request) => {
 
 app.get("/wallet/:address/stats", async (request) => {
   const { address } = request.params as { address: string };
+
+  ethers.isAddress(address) || request.log.error("Invalid address");
 
   const stats = await getWalletStats(address);
 
@@ -204,6 +208,10 @@ app.post("/tokens", async (request, reply) => {
 app.patch("/tokens/:address/enable", async (request, reply) => {
   const { address } = request.params as { address: string };
 
+    ethers.isAddress(address) || reply.status(400).send({
+    error: "Invalid address",
+  });
+
   const token = await setTrackedTokenActive(address, true);
 
   if (!token) {
@@ -220,6 +228,10 @@ app.patch("/tokens/:address/enable", async (request, reply) => {
 
 app.patch("/tokens/:address/disable", async (request, reply) => {
   const { address } = request.params as { address: string };
+
+  ethers.isAddress(address) || reply.status(400).send({
+    error: "Invalid address",
+  });
 
   const token = await setTrackedTokenActive(address, false);
 

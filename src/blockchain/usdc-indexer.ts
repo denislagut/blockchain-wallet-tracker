@@ -9,6 +9,7 @@ import {
 
 const INDEXER_NAME = "erc20_transfers";
 const BLOCK_RANGE = 5;
+const MAX_BLOCKS_PER_RUN = 100;
 
 export const indexRecentErc20Transfers = async () => {
   const latestBlock = await provider.getBlockNumber();
@@ -17,7 +18,7 @@ export const indexRecentErc20Transfers = async () => {
 
   const fromBlock =
     lastProcessedBlock === null
-      ? latestBlock - BLOCK_RANGE
+      ? Math.max(0, latestBlock - BLOCK_RANGE + 1)
       : lastProcessedBlock + 1;
 
   const toBlock = Math.min(fromBlock + BLOCK_RANGE - 1, latestBlock);
@@ -60,7 +61,7 @@ export const indexRecentErc20Transfers = async () => {
 };
 
 export const catchUpErc20Transfers = async () => {
-  const latestBlock =
+  const chainLatestBlock =
     await provider.getBlockNumber();
 
   let lastProcessedBlock =
@@ -70,8 +71,13 @@ export const catchUpErc20Transfers = async () => {
 
   let fromBlock =
     lastProcessedBlock === null
-      ? latestBlock - BLOCK_RANGE
+      ? Math.max(0, chainLatestBlock - BLOCK_RANGE + 1)
       : lastProcessedBlock + 1;
+
+  const latestBlock = Math.min(
+    chainLatestBlock,
+    fromBlock + MAX_BLOCKS_PER_RUN - 1,
+  );
 
   let totalFound = 0;
   let totalSaved = 0;
@@ -116,7 +122,9 @@ export const catchUpErc20Transfers = async () => {
   }
 
   return {
+    chainLatestBlock,
     latestBlock,
+    maxBlocksPerRun: MAX_BLOCKS_PER_RUN,
     totalFound,
     totalSaved,
     batches,

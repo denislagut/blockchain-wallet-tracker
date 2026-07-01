@@ -1,5 +1,7 @@
 import { db } from "./client.js";
 
+const MAX_TRACKED_TOKENS = 10;
+
 export type TrackedToken = {
   address: string;
   symbol: string;
@@ -45,6 +47,31 @@ export const addTrackedToken = async (token: {
   symbol: string;
   decimals: number;
 }): Promise<TrackedToken> => {
+  const normalizedAddress = token.address.toLowerCase();
+  const existingToken = await db.query(
+    `
+      SELECT address
+      FROM tracked_tokens
+      WHERE address = $1
+    `,
+    [normalizedAddress],
+  );
+
+  if (existingToken.rows.length === 0) {
+    const countResult = await db.query(
+      `
+        SELECT COUNT(*)::int AS count
+        FROM tracked_tokens
+      `,
+    );
+
+    if (countResult.rows[0].count >= MAX_TRACKED_TOKENS) {
+      throw new Error(
+        `Tracked token limit reached: ${MAX_TRACKED_TOKENS}`,
+      );
+    }
+  }
+
   const result = await db.query(
     `
       INSERT INTO tracked_tokens (
@@ -68,7 +95,7 @@ export const addTrackedToken = async (token: {
         created_at
     `,
     [
-      token.address.toLowerCase(),
+      normalizedAddress,
       token.symbol,
       token.decimals,
     ],

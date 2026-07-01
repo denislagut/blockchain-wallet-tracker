@@ -1,4 +1,11 @@
 import { getWalletStats, getWalletTransfers } from "../../../lib/api";
+import {
+  getSepoliaAddressUrl,
+  getSepoliaTxUrl,
+  shortenAddress,
+} from "../../../lib/format";
+
+export const dynamic = "force-dynamic";
 
 type WalletStat = {
   token_address: string;
@@ -48,11 +55,10 @@ export default async function WalletPage({ params }: Props) {
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
+          <a href="/" className="mb-6 inline-block text-sm underline">
+            &lt;- Back to dashboard
+          </a>
 
-            <a href="/" className="mb-6 inline-block text-sm underline">
-            ← Back to dashboard
-            </a>
-            
           <h1 className="mb-3 text-3xl font-bold">
             Wallet Details
           </h1>
@@ -67,9 +73,15 @@ export default async function WalletPage({ params }: Props) {
             Address
           </h2>
 
-          <p className="break-all rounded bg-gray-100 p-3 text-sm">
-            {address}
-          </p>
+          <a
+            href={getSepoliaAddressUrl(address)}
+            target="_blank"
+            rel="noreferrer"
+            title={address}
+            className="inline-block rounded bg-gray-100 p-3 text-sm text-blue-600 underline"
+          >
+            {shortenAddress(address)}
+          </a>
         </section>
 
         <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -112,65 +124,61 @@ export default async function WalletPage({ params }: Props) {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-3 text-left">
-                    Token
-                  </th>
-                  <th className="border p-3 text-left">
-                    Sent transfers
-                  </th>
-                  <th className="border p-3 text-left">
-                    Received transfers
-                  </th>
-                  <th className="border p-3 text-left">
-                    Sent amount
-                  </th>
-                  <th className="border p-3 text-left">
-                    Received amount
-                  </th>
-                </tr>
-              </thead>
+          {stats.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {stats.map((stat) => (
+                <article
+                  key={stat.token_address}
+                  className="rounded border p-4"
+                >
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold">
+                      {stat.symbol}
+                    </h3>
+                    <a
+                      href={getSepoliaAddressUrl(stat.token_address)}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={stat.token_address}
+                      className="text-xs text-blue-600 underline"
+                    >
+                      {shortenAddress(stat.token_address)}
+                    </a>
+                  </div>
 
-              <tbody>
-                {stats.map((stat) => (
-                  <tr
-                    key={stat.token_address}
-                    className="hover:bg-gray-50"
-                  >
-                    <td className="border p-3">
-                      <div className="font-medium">
-                        {stat.symbol}
-                      </div>
-                      <div className="break-all text-xs text-gray-500">
-                        {stat.token_address}
-                      </div>
-                    </td>
-                    <td className="border p-3">
-                      {stat.sent_count}
-                    </td>
-                    <td className="border p-3">
-                      {stat.received_count}
-                    </td>
-                    <td className="border p-3">
-                      {stat.sent_amount}
-                    </td>
-                    <td className="border p-3">
-                      {stat.received_amount}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-500">
+                        Sent
+                      </p>
+                      <p className="font-semibold">
+                        {stat.sent_amount}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {stat.sent_count} transfers
+                      </p>
+                    </div>
 
-            {stats.length === 0 && (
-              <p className="border-x border-b p-3 text-sm text-gray-500">
-                No indexed token activity for this wallet.
-              </p>
-            )}
-          </div>
+                    <div>
+                      <p className="text-gray-500">
+                        Received
+                      </p>
+                      <p className="font-semibold">
+                        {stat.received_amount}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {stat.received_count} transfers
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded border p-3 text-sm text-gray-500">
+              No indexed token activity for this wallet.
+            </p>
+          )}
         </section>
 
         <section className="rounded border bg-white p-5">
@@ -190,6 +198,9 @@ export default async function WalletPage({ params }: Props) {
                 <tr className="bg-gray-100">
                   <th className="border p-3 text-left">
                     Token
+                  </th>
+                  <th className="border p-3 text-left">
+                    Tx
                   </th>
                   <th className="border p-3 text-left">
                     From
@@ -216,12 +227,39 @@ export default async function WalletPage({ params }: Props) {
                       {transfer.symbol}
                     </td>
 
-                    <td className="max-w-xs break-all border p-3">
-                      {transfer.from_address}
+                    <td className="border p-3">
+                      <a
+                        href={getSepoliaTxUrl(transfer.transaction_hash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        View tx
+                      </a>
                     </td>
 
-                    <td className="max-w-xs break-all border p-3">
-                      {transfer.to_address}
+                    <td className="border p-3">
+                      <a
+                        href={getSepoliaAddressUrl(transfer.from_address)}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={transfer.from_address}
+                        className="text-blue-600 underline"
+                      >
+                        {shortenAddress(transfer.from_address)}
+                      </a>
+                    </td>
+
+                    <td className="border p-3">
+                      <a
+                        href={getSepoliaAddressUrl(transfer.to_address)}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={transfer.to_address}
+                        className="text-blue-600 underline"
+                      >
+                        {shortenAddress(transfer.to_address)}
+                      </a>
                     </td>
 
                     <td className="border p-3">
@@ -235,6 +273,12 @@ export default async function WalletPage({ params }: Props) {
                 ))}
               </tbody>
             </table>
+
+            {transfers.length === 0 && (
+              <p className="border-x border-b p-3 text-sm text-gray-500">
+                No transfers found for this wallet.
+              </p>
+            )}
           </div>
         </section>
       </div>
